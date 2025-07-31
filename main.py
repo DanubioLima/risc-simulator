@@ -166,18 +166,21 @@ if __name__ == "__main__":
 
     # Exemplo 1 do PDF
     other_program_code = """
-    0000:0x4003
-    0001:0x6202
-    0002:0x4A0A
-    0003:0x3002
-    0004:0xFFFF
+    0000:0x400F
+    0001:0xC00C
+    0002:0x6001
+    0003:0x2100
+    0004:0x621A
+    0005:0x6002
+    0006:0x3012
+    0007:0xFFFF
     """
 
     # Cria uma instância do simulador
     simulator = RISCSimulator()
 
     # Carrega o programa de exemplo
-    simulator.load_program_from_hex_string(other_program_code)
+    simulator.load_program_from_hex_string(program_code)
     
     # Executa o simulador
     simulator.run()

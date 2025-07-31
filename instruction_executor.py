@@ -129,6 +129,11 @@ class InstructionExecutor:
         val_rm = self.registers[rm]
         val_rn = self.registers[rn]
         
+        
+        print("compare: ", val_rm, val_rn)
+        
+        
+        
         # Atualiza a flag Zero (Z)
         # Z = 1 se os valores forem iguais, senão Z = 0
         self.flags['Z'] = 1 if val_rm == val_rn else 0
@@ -172,6 +177,8 @@ class InstructionExecutor:
         should_jump = False
         jump_name = "UNKNOWN"
         condition_met_str = ""
+        
+        print(f"{hex(cond)}")
 
         # JEQ (Jump if equal): Salta quando a flag zero está ativa
         if cond == 0b00:
@@ -194,6 +201,7 @@ class InstructionExecutor:
                 should_jump = True
             condition_met_str = f"Z={self.flags['Z']}, C={self.flags['C']}"
         
+        # JGE (Jump if greater than or equal): Salta quando a flag zero está ativa ou a carry não está
         elif cond == 0b11:
             if self.flags['Z'] == 1 or self.flags['C'] == 0:
                 should_jump = True
@@ -272,6 +280,18 @@ class InstructionExecutor:
         # Pega o endereço do registrador de endereço (Rm)
         memory_address = self.registers[rm]
         
+        if memory_address == 0xF002:
+            char_out = chr(data_to_store & 0xFF) # Converte os 8 bits inferiores para ASCII
+            print(f"Saída (CHAR OUT): {char_out}")
+            return True
+
+        # 0xF003 - INT OUT: escreve um inteiro na saída padrão
+        elif memory_address == 0xF003:
+            # Converte para um inteiro com sinal de 16 bits para exibição
+            value = self.sign_extend(data_to_store, 16)
+            print(f"Saída (INT OUT): {value}")
+            return True
+        
         # Armazena o dado na memória
         self.memory[memory_address] = data_to_store
         
@@ -279,6 +299,7 @@ class InstructionExecutor:
         self.accessed_memory.add(memory_address)
 
         print(f"Instrução: STR R{rn}, [R{rm}] -> MEM[0x{memory_address:04X}] = 0x{data_to_store:04X}")
+        return True
 
     def _execute_subi(self, instruction):
         """
@@ -419,13 +440,39 @@ class InstructionExecutor:
         """
         rd = (instruction >> 8) & 0xF
         rm = (instruction >> 4) & 0xF
-        
+        print("RD", rd)
         # Pega o endereço do registrador de endereço (Rm)
         memory_address = self.registers[rm]
         
-        # Lê o dado da memória. O método .get(addr, 0) garante que,
-        # se o endereço não foi inicializado, o valor lido será 0,
-        # conforme a especificação[cite: 28].
+        
+        print("MEMORY_ADDRESS:", memory_address)
+
+        # --- LÓGICA DE ENTRADA (E/S) ---
+        # 0xF000 - CHAR IN: lê um caractere da entrada padrão
+        if memory_address == 0xF000:
+            try:
+                char_in = input("Entrada (CHAR IN): ")[:1] # Pega apenas o primeiro caractere
+                value = ord(char_in) if char_in else 0
+                self.registers[rd] = value
+                print(f"  -> LIDO '{char_in}' (ASCII: {value}) DO TECLADO -> R{rd}")
+            except (TypeError, ValueError):
+                print("  -> ERRO: Entrada de caractere inválida.")
+                self.registers[rd] = 0
+                return True
+
+        # 0xF001 - INT IN: lê um inteiro da entrada padrão
+        elif memory_address == 0xEFB1:
+            try:
+                int_in = int(input("Entrada (INT IN): "))
+                # Garante que o valor se mantenha em 16 bits
+                value = int_in & 0xFFFF
+                self.registers[rd] = value
+                print(f"  -> LIDO INTEIRO {int_in} DO TECLADO -> R{rd}")
+            except (TypeError, ValueError):
+                print("  -> ERRO: Entrada de inteiro inválida.")
+                self.registers[rd] = 0
+                return True
+        
         loaded_data = self.memory.get(memory_address, 0)
         
         # Armazena o dado lido no registrador de destino (Rd)
