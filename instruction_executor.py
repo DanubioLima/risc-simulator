@@ -397,7 +397,7 @@ class InstructionExecutor:
         self.registers[rd] = result
         # Atualização das flags
         self.flags['Z'] = 1 if result == 0 else 0
-        self.flags['C'] = 1 if (val_rm & (1 << (16 - shift_amount - 1))) else 0
+        self.flags['C'] = 1 if (val_rm >> (16 - shift_amount)) & 1 else 0
         print(f"Instrução: SHL R{rd}, R{rm}, {shift_amount} -> Resultado=0x{result:04X}, Z={self.flags['Z']}, C={self.flags['C']}")
         return True
     
@@ -443,7 +443,6 @@ class InstructionExecutor:
         print("RD", rd)
         # Pega o endereço do registrador de endereço (Rm)
         memory_address = self.registers[rm]
-        
         
         print("MEMORY_ADDRESS:", memory_address)
 

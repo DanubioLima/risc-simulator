@@ -1,4 +1,5 @@
 from instruction_executor import InstructionExecutor
+import sys
 
 SP = 14  # Stack Pointer (Ponteiro de Pilha)
 PC = 15  # Program Counter (Contador de Programa)
@@ -124,57 +125,21 @@ class RISCSimulator:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Uso: python main.py <arquivo_hex>")
+        sys.exit(1)
     
-    # Exemplo 4 dos casos de teste
-    program_code = """
-    0000:0x4AF0
-    0001:0xCBA8
-    0002:0x6CB1
-    0003:0x21C0
-    0004:0xE001
-    0005:0x4D00
-    0006:0xD01D
-    0007:0x1005
-    0008:0x25C0
-    0009:0x30A5
-    000A:0x6AA1
-    000B:0x8111
-    000C:0x0FF9
-    000D:0xF100
-    000E:0x70A1
-    000F:0x6AF2
-    0010:0xE00A
-    0011:0x0003
-    0012:0x6CB3
-    0013:0x30C0
-    0014:0xFFFF
-    0015:0xE004
-    0016:0xE005
-    0017:0x6410
-    0018:0x1007
-    0019:0x4400
-    001A:0x2500
-    001B:0x5445
-    001C:0x6001
-    001D:0x8111
-    001E:0x17FB
-    001F:0x6040
-    0020:0xF500
-    0021:0xF400
-    0022:0xFF00
-    """
-
-    # Exemplo 1 do PDF
-    other_program_code = """
-    0000:0x400F
-    0001:0xC00C
-    0002:0x6001
-    0003:0x2100
-    0004:0x621A
-    0005:0x6002
-    0006:0x3012
-    0007:0xFFFF
-    """
+    try:
+        with open(sys.argv[1], 'r') as file:
+            program_code = file.read()
+    except FileNotFoundError:
+        print(f"Erro: Arquivo '{sys.argv[1]}' não encontrado.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Erro ao ler arquivo: {e}")
+        sys.exit(1)
+        
+    print("program_code: ", program_code)
 
     # Cria uma instância do simulador
     simulator = RISCSimulator()
